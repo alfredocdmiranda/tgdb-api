@@ -21,16 +21,19 @@ class Game(db.Model):
         self.players = kwargs.pop('players', 1)
         self.release_date = kwargs.pop('release_date')
         self.developer = kwargs.pop('developer', 'Unknown')
-        self.publisher = kwargs.pop('publisher', 0)
-        self.genre = kwargs.pop('genre', 0)
-        self.rating = kwargs.pop('rating', 0)
+        self.publisher = kwargs.pop('publisher', 1)
+        self.genre = kwargs.pop('genre', 1)
+        self.rating = kwargs.pop('rating', 1)
 
     def to_json(self):
-        return {'title': self.title,
+        return {'id': self.id,
+                'title': self.title,
                 'players': self.players,
                 'release_date': self.release_date.strftime("%d/%m/%Y"),
                 'developer': self.developer,
-                'publisher': self.publisher}
+                'publisher': self.publisher.name,
+                'rating': self.rating.name,
+                'genre': self.genre.name}
 
 class Genre(db.Model):
     __tablename__ = 'genre'
@@ -38,14 +41,35 @@ class Genre(db.Model):
     name = db.Column(db.String(15))
     games = db.relationship("Game", back_populates="genre")
 
+    def __init__(self, name):
+        self.name = name
+
+    def to_json(self):
+        return {'id': self.id,
+                'name': self.name}
+
 class Publisher(db.Model):
     __tablename__ = 'publisher'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50))
     games = db.relationship("Game", back_populates="publisher")
 
+    def __init__(self, name):
+        self.name = name
+
+    def to_json(self):
+        return {'id': self.id,
+                'name': self.name}
+
 class Rating(db.Model):
     __tablename__ = 'rating'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(15))
     games = db.relationship("Game", back_populates="rating")
+
+    def __init__(self, name):
+        self.name = name
+
+    def to_json(self):
+        return {'id': self.id,
+                'name': self.name}
