@@ -3,6 +3,7 @@ from datetime import datetime, date
 from flask import Flask
 from flask_restful import reqparse, abort, Api, Resource
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import exc
 
 __API_VERSION__ = '0.1'
 
@@ -10,18 +11,57 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.sqlite'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-api = Api(app, catch_all_404s=True)
+api = Api(app)
 db = SQLAlchemy(app)
 
 from models import *
 
+def get_object_or_404(model, *criterion):
+    try:
+        return model.query.filter(*criterion).one()
+    except (exc.NoResultFound, exc.MultipleResultsFound) as err:
+        abort(404)
+
 class APIGame(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('title', type = str)
+        self.parser.add_argument('release_date', type = str)
+        self.parser.add_argument('players', type = int)
+        self.parser.add_argument('developer', type = str)
+        self.parser.add_argument('publisher', type = int)
+        self.parser.add_argument('genre', type = int)
+        self.parser.add_argument('rating', type = int)
+        super(APIGame, self).__init__()
+
     def get(self, game_id):
         game = Game.query.filter_by(id=game_id).first()
         if not game:
             abort(404)
 
         return game.to_json()
+
+    def put(self, game_id):
+        args = self.parser.parse_args()
+
+        game = Game.query.filter_by(id=game_id).first()
+        if not game:
+            abort(404)
+
+        for k in args:
+            # TODO Update error message
+            if k == 'publisher':
+                args[k] = get_object_or_404(Publisher, Publisher.id == args[k])
+            elif k == 'rating':
+                args[k] = get_object_or_404(Rating, Rating.id == args[k])
+            elif k == 'genre':
+                args[k] = get_object_or_404(Genre, Genre.id == args[k])
+
+            if args[k]:
+                setattr(game, k, args[k])
+
+        db.session.commit()
+
 
 class APIGameList(Resource):
     def __init__(self):
@@ -48,8 +88,8 @@ class APIGameList(Resource):
         args['publisher'] = Publisher.query.filter_by(id=args['publisher']).first()
         args['genre'] = Genre.query.filter_by(id=args['genre']).first()
         args['rating'] = Rating.query.filter_by(id=args['rating']).first()
+
         game = Game(**args)
-        print(game)
         db.session.add(game)
         db.session.commit()
 
@@ -77,8 +117,8 @@ class APIGenreList(Resource):
 
     def post(self):
         args = self.parser.parse_args()
+
         genre = Genre(**args)
-        print(genre)
         db.session.add(genre)
         db.session.commit()
 
@@ -106,8 +146,8 @@ class APIPublisherList(Resource):
 
     def post(self):
         args = self.parser.parse_args()
+
         publisher = Publisher(**args)
-        print(publisher)
         db.session.add(publisher)
         db.session.commit()
 
@@ -135,8 +175,8 @@ class APIRatingList(Resource):
 
     def post(self):
         args = self.parser.parse_args()
+
         rating = Rating(**args)
-        print(rating)
         db.session.add(rating)
         db.session.commit()
 
