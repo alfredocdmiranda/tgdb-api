@@ -35,33 +35,29 @@ class APIGame(Resource):
         super(APIGame, self).__init__()
 
     def get(self, game_id):
-        game = Game.query.filter_by(id=game_id).first()
-        if not game:
-            abort(404)
+        game = get_object_or_404(Game, Game.id == game_id)
 
         return game.to_json()
 
     def put(self, game_id):
         args = self.parser.parse_args()
 
-        game = Game.query.filter_by(id=game_id).first()
-        if not game:
-            abort(404)
-
+        game = get_object_or_404(Game, Game.id == game_id)
         for k in args:
-            # TODO Update error message
-            if k == 'publisher':
-                args[k] = get_object_or_404(Publisher, Publisher.id == args[k])
-            elif k == 'rating':
-                args[k] = get_object_or_404(Rating, Rating.id == args[k])
-            elif k == 'genre':
-                args[k] = get_object_or_404(Genre, Genre.id == args[k])
-
             if args[k]:
+                # TODO Update error message
+                if k == 'publisher':
+                    args[k] = get_object_or_404(Publisher, Publisher.id == args[k])
+                elif k == 'rating':
+                    args[k] = get_object_or_404(Rating, Rating.id == args[k])
+                elif k == 'genre':
+                    args[k] = get_object_or_404(Genre, Genre.id == args[k])
+
                 setattr(game, k, args[k])
 
         db.session.commit()
 
+        return None, 204
 
 class APIGameList(Resource):
     def __init__(self):
@@ -85,9 +81,9 @@ class APIGameList(Resource):
     def post(self):
         args = self.parser.parse_args()
         args['release_date'] = datetime.strptime(args['release_date'], "%d/%m/%Y").date()
-        args['publisher'] = Publisher.query.filter_by(id=args['publisher']).first()
-        args['genre'] = Genre.query.filter_by(id=args['genre']).first()
-        args['rating'] = Rating.query.filter_by(id=args['rating']).first()
+        args['publisher'] = get_object_or_404(Publisher, Publisher.id == args['publisher'])
+        args['genre'] = get_object_or_404(Genre, Genre.id == args['genre'])
+        args['rating'] = get_object_or_404(Rating, Rating.id == args['rating'])
 
         game = Game(**args)
         db.session.add(game)
@@ -97,9 +93,7 @@ class APIGameList(Resource):
 
 class APIGenre(Resource):
     def get(self, genre_id):
-        genre = Genre.query.filter_by(id=genre_id).first()
-        if not genre:
-            abort(404)
+        genre = get_object_or_404(Genre, Genre.id == genre_id)
 
         return genre.to_json()
 
@@ -126,9 +120,7 @@ class APIGenreList(Resource):
 
 class APIPublisher(Resource):
     def get(self, publisher_id):
-        publisher = Publisher.query.filter_by(id=publisher_id).first()
-        if not publisher:
-            abort(404)
+        publisher = get_object_or_404(Publisher, Publisher.id == publisher_id)
 
         return publisher.to_json()
 
@@ -155,9 +147,7 @@ class APIPublisherList(Resource):
 
 class APIRating(Resource):
     def get(self, rating_id):
-        rating = Rating.query.filter_by(id=rating_id).first()
-        if not rating:
-            abort(404)
+        rating = get_object_or_404(Rating, Rating.id == rating_id)
 
         return rating.to_json()
 
