@@ -92,10 +92,27 @@ class APIGameList(Resource):
         return game.to_json(), 201
 
 class APIGenre(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('name', type = str)
+        super(APIGenre, self).__init__()
+
     def get(self, genre_id):
         genre = get_object_or_404(Genre, Genre.id == genre_id)
 
         return genre.to_json()
+
+    def put(self, game_id):
+        args = self.parser.parse_args()
+
+        genre = get_object_or_404(Genre, Genre.id == genre_id)
+        for k in args:
+            if args[k]:
+                setattr(game, k, args[k])
+
+        db.session.commit()
+
+        return None, 204
 
 class APIGenreList(Resource):
     def __init__(self):
@@ -119,10 +136,27 @@ class APIGenreList(Resource):
         return genre.to_json(), 201
 
 class APIPublisher(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('name', type = str)
+        super(APIPublisher, self).__init__()
+
     def get(self, publisher_id):
         publisher = get_object_or_404(Publisher, Publisher.id == publisher_id)
 
         return publisher.to_json()
+
+    def put(self, game_id):
+        args = self.parser.parse_args()
+
+        publisher = get_object_or_404(Publisher, Publisher.id == publisher_id)
+        for k in args:
+            if args[k]:
+                setattr(game, k, args[k])
+
+        db.session.commit()
+
+        return None, 204
 
 class APIPublisherList(Resource):
     def __init__(self):
@@ -146,10 +180,27 @@ class APIPublisherList(Resource):
         return publisher.to_json(), 201
 
 class APIRating(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('name', type = str)
+        super(APIRating, self).__init__()
+
     def get(self, rating_id):
         rating = get_object_or_404(Rating, Rating.id == rating_id)
 
         return rating.to_json()
+
+    def put(self, game_id):
+        args = self.parser.parse_args()
+
+        rating = get_object_or_404(Rating, Rating.id == rating_id)
+        for k in args:
+            if args[k]:
+                setattr(game, k, args[k])
+
+        db.session.commit()
+
+        return None, 204
 
 class APIRatingList(Resource):
     def __init__(self):
