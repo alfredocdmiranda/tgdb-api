@@ -73,3 +73,45 @@ class Rating(db.Model):
     def to_json(self):
         return {'id': self.id,
                 'name': self.name}
+
+class Platform(db.Model):
+    __tablename__ = 'platform'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(15))
+    developer_id = db.Column(db.Integer, db.ForeignKey('developer.id'))
+    developer = db.relationship("Developer", back_populates="platforms")
+    manufacturer_id = db.Column(db.Integer, db.ForeignKey('manufacturer.id'))
+    manufacturer = db.relationship("Manufacturer", back_populates="platoforms")
+
+    def __init__(self, name):
+        self.name = name
+
+    def to_json(self):
+        return {'id': self.id,
+                'name': self.name}
+
+class Developer(db.Model):
+    __tablename__ = 'developer'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50))
+    platforms = db.relationship("Platform", back_populates="developer")
+
+    def __init__(self, name):
+        self.name = name
+
+    def to_json(self):
+        return {'id': self.id,
+                'name': self.name}
+
+class Manufacturer(db.Model):
+    __tablename__ = 'manufacturer'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50))
+    platforms = db.relationship("Platform", back_populates="manufacturer")
+
+    def __init__(self, name):
+        self.name = name
+
+    def to_json(self):
+        return {'id': self.id,
+                'name': self.name}
