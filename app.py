@@ -1,4 +1,4 @@
-from datetime import datetime, date
+cd from datetime import datetime, date
 
 from flask import Flask
 from flask_restful import reqparse, abort, Api, Resource
@@ -102,13 +102,13 @@ class APIGenre(Resource):
 
         return genre.to_json()
 
-    def put(self, game_id):
+    def put(self, genre_id):
         args = self.parser.parse_args()
 
         genre = get_object_or_404(Genre, Genre.id == genre_id)
         for k in args:
             if args[k]:
-                setattr(game, k, args[k])
+                setattr(genre, k, args[k])
 
         db.session.commit()
 
@@ -223,6 +223,52 @@ class APIRatingList(Resource):
 
         return rating.to_json(), 201
 
+class APIPlatform(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('name', type=str)
+        super(APIPlatform, self).__init__()
+
+    def get(self, platform_id):
+        platform = get_object_or_404(Platform, Platform.id == platform_id)
+
+        return platform.to_json()
+
+    def put(self, platform_id):
+        args = self.parser.parse_args()
+
+        platform = get_object_or_404(Platform, Platform.id == platform_id)
+        for k in args:
+            if args[k]:
+                setattr(platform, k, args[k])
+
+        db.session.commit()
+
+        return None, 204
+
+class APIPlatformList(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('name', type = str, required = True,
+            help = 'No platform name provided')
+        self.parser.add_argument('developer', type=int, default=1)
+        self.parser.add_argument('manufacturer', type=int, default=1)
+        super(APIPlatformList, self).__init__()
+
+    def get(self):
+        platforms = [ g.to_json() for g in Platform.query.all()]
+
+        return platforms
+
+    def post(self):
+        args = self.parser.parse_args()
+
+        platform = Platform(**args)
+        db.session.add(platform)
+        db.session.commit()
+
+        return platform.to_json(), 201
+
 class APIStatus(Resource):
     def get(self):
         return {
@@ -239,6 +285,12 @@ api.add_resource(APIPublisherList, '/publishers', endpoint='publishers')
 api.add_resource(APIPublisher, '/publishers/<publisher_id>', endpoint='publisher')
 api.add_resource(APIRatingList, '/ratings', endpoint='ratings')
 api.add_resource(APIRating, '/ratings/<rating_id>', endpoint='rating')
+api.add_resource(APIPlatformList, '/platforms', endpoint='platforms')
+api.add_resource(APIPlatform, '/platforms/<platform_id>', endpoint='platforms')
+api.add_resource(APIDeveloperList, '/developers', endpoint='developers')
+api.add_resource(APIDeveloper, '/developers/<developer_id>', endpoint='developer')
+api.add_resource(APIManufacturerList, '/manufacturers', endpoint='manufacturers')
+api.add_resource(APIManufacturer, '/manufacturers/<manufacturer_id>', endpoint='manufacturer')
 
 if __name__ == '__main__':
     db.create_all()
