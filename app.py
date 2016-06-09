@@ -269,6 +269,50 @@ class APIPlatformList(Resource):
 
         return platform.to_json(), 201
 
+class APIDeveloper(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('name', type = str)
+        super(APIDeveloper, self).__init__()
+
+    def get(self, developer_id):
+        developer = get_object_or_404(Developer, Developer.id == developer_id)
+
+        return developer.to_json()
+
+    def put(self, developer_id):
+        args = self.parser.parse_args()
+
+        developer = get_object_or_404(Developer, Developer.id == developer_id)
+        for k in args:
+            if args[k]:
+                setattr(developer, k, args[k])
+
+        db.session.commit()
+
+        return None, 204
+
+class APIDeveloperList(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('name', type = str, required = True,
+            help = 'No developer name provided')
+        super(APIDeveloperList, self).__init__()
+
+    def get(self):
+        developers = [ g.to_json() for g in Developer.query.all()]
+
+        return developers
+
+    def post(self):
+        args = self.parser.parse_args()
+
+        developer = Genre(**args)
+        db.session.add(developer)
+        db.session.commit()
+
+        return developer.to_json(), 201
+
 class APIStatus(Resource):
     def get(self):
         return {
