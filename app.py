@@ -1,4 +1,4 @@
-cd from datetime import datetime, date
+from datetime import datetime, date
 
 from flask import Flask
 from flask_restful import reqparse, abort, Api, Resource
@@ -262,6 +262,8 @@ class APIPlatformList(Resource):
 
     def post(self):
         args = self.parser.parse_args()
+        args['developer'] = get_object_or_404(Developer, Developer.id == args['developer'])
+        args['manufacturer'] = get_object_or_404(Manufacturer, Manufacturer.id == args['manufacturer'])
 
         platform = Platform(**args)
         db.session.add(platform)
@@ -374,7 +376,7 @@ api.add_resource(APIPublisher, '/publishers/<publisher_id>', endpoint='publisher
 api.add_resource(APIRatingList, '/ratings', endpoint='ratings')
 api.add_resource(APIRating, '/ratings/<rating_id>', endpoint='rating')
 api.add_resource(APIPlatformList, '/platforms', endpoint='platforms')
-api.add_resource(APIPlatform, '/platforms/<platform_id>', endpoint='platforms')
+api.add_resource(APIPlatform, '/platforms/<platform_id>', endpoint='platform')
 api.add_resource(APIDeveloperList, '/developers', endpoint='developers')
 api.add_resource(APIDeveloper, '/developers/<developer_id>', endpoint='developer')
 api.add_resource(APIManufacturerList, '/manufacturers', endpoint='manufacturers')
