@@ -307,11 +307,55 @@ class APIDeveloperList(Resource):
     def post(self):
         args = self.parser.parse_args()
 
-        developer = Genre(**args)
+        developer = Developer(**args)
         db.session.add(developer)
         db.session.commit()
 
         return developer.to_json(), 201
+
+class APIManufacturer(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('name', type = str)
+        super(APIManufacturer, self).__init__()
+
+    def get(self, manufacturer_id):
+        developer = get_object_or_404(Manufacturer, Manufacturer.id == manufacturer_id)
+
+        return manufacturer.to_json()
+
+    def put(self, manufacturer_id):
+        args = self.parser.parse_args()
+
+        manufacturer = get_object_or_404(Manufacturer, Manufacturer.id == manufacturer_id)
+        for k in args:
+            if args[k]:
+                setattr(manufacturer, k, args[k])
+
+        db.session.commit()
+
+        return None, 204
+
+class APIManufacturerList(Resource):
+    def __init__(self):
+        self.parser = reqparse.RequestParser()
+        self.parser.add_argument('name', type = str, required = True,
+            help = 'No manufacturer name provided')
+        super(APIManufacturerList, self).__init__()
+
+    def get(self):
+        manufacturers = [ g.to_json() for g in Manufacturer.query.all()]
+
+        return manufacturers
+
+    def post(self):
+        args = self.parser.parse_args()
+
+        manufacturer = Manufacturer(**args)
+        db.session.add(manufacturer)
+        db.session.commit()
+
+        return manufacturer.to_json(), 201
 
 class APIStatus(Resource):
     def get(self):
