@@ -81,10 +81,12 @@ class Platform(db.Model):
     developer_id = db.Column(db.Integer, db.ForeignKey('developer.id'))
     developer = db.relationship("Developer", back_populates="platforms")
     manufacturer_id = db.Column(db.Integer, db.ForeignKey('manufacturer.id'))
-    manufacturer = db.relationship("Manufacturer", back_populates="platoforms")
+    manufacturer = db.relationship("Manufacturer", back_populates="platforms")
 
-    def __init__(self, name):
-        self.name = name
+    def __init__(self,  *args, **kwargs):
+        self.name = kwargs.pop('name')
+        self.developer = kwargs.pop('developer')
+        self.manufacturer = kwargs.pop('manufacturer')
 
     def to_json(self):
         return {'id': self.id,
